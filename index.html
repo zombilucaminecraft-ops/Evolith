@@ -1,1 +1,216 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>ICT Battle Game</title>
+  <style>
+    body { font-family: Arial, sans-serif; text-align: center; background:#0f172a; color:white;}
+    .box { width:85%; margin:auto; background:#1e293b; padding:20px; border-radius:12px; margin-top:20px;}
+    button { padding:10px 20px; margin-top:15px; border:none; border-radius:8px; background:#38bdf8; color:black; font-weight:bold; cursor:pointer;}
+    button:disabled { background:#999; cursor:not-allowed;}
+    .hpBar { width:220px; border:2px solid white; margin:auto; }
+    .hp { height:20px; width:100%; background:red; }
+    .enemy img { margin-top:15px; }
+    #gameOver { display:none; }
+    ul { text-align:left; margin:10px auto; padding-left:20px; max-width:300px;}
+    input, select { padding:5px; border-radius:5px; border:none;}
+  </style>
+</head>
+<body>
 
+<h1>📘 ICT Battle - Fundamentals of ICT</h1>
+
+<!-- LESSON / NAME INPUT -->
+<div id="lesson" class="box">
+<h2>Enter Your Name:</h2>
+<input id="playerName" placeholder="Your name">
+<h2>Lesson: Fundamentals of ICT</h2>
+<p>
+ICT (Information and Communication Technology) involves using computers, networks, and software to manage information.  
+It includes hardware, software applications, networking, and cybersecurity. Understanding ICT helps solve problems and communicate effectively.
+</p>
+<p>
+Examples include operating systems, internet services, databases, cloud computing, and network protocols.  
+Learning ICT fundamentals helps troubleshoot systems, manage networks, and secure information.
+</p>
+<br>
+<button id="startBtn">Start Activity</button>
+</div>
+
+<!-- BATTLE -->
+<div id="battle" class="box" style="display:none;">
+<h2>⚔ Doubt Appears!</h2>
+<div class="enemy">
+<img src="https://i.imgur.com/4AiXzf8.png" width="180">
+</div>
+<h3>Doubt HP</h3>
+<div class="hpBar">
+<div id="hp" class="hp"></div>
+</div>
+<h2 id="questionText"></h2>
+<input id="answer" placeholder="Type your answer">
+<br>
+<button id="attackBtn">Attack</button>
+<p id="feedback"></p>
+</div>
+
+<!-- MOOD -->
+<div id="mood" class="box" style="display:none;">
+<h2>😊 Mood Check</h2>
+<p>How good are you feeling after answering?</p>
+<select id="moodSelect">
+<option>Very Good</option>
+<option>Good</option>
+<option>Neutral</option>
+<option>Bad</option>
+<option>Very Bad</option>
+</select>
+<br>
+<button id="saveMoodBtn">Save Mood</button>
+</div>
+
+<!-- GAME OVER / LEADERBOARD -->
+<div id="gameOver" class="box">
+<h2>💀 Game Over / Activity Complete</h2>
+<p id="gameOverText"></p>
+<h3>Leaderboard (Local)</h3>
+<ul id="leaderboard"></ul>
+<br>
+<button id="restartBtn">Play Again</button>
+</div>
+
+<script>
+let playerName = "Player";
+let currentQuestion = 0;
+let hp = 100;
+let damagePerQuestion = 20;
+let correctCount = 0;
+let lastMood = "";
+
+// ICT Questions
+let questions = [
+{q:"What does ICT stand for?", a:["information and communication technology"]},
+{q:"Which devices are considered input devices?", a:["keyboard","mouse","scanner","microphone"]},
+{q:"Which devices output visuals or sound?", a:["monitor","screen","printer","speakers"]},
+{q:"Which device stores permanent data?", a:["hard drive","ssd","flash drive"]},
+{q:"Which software manages computer hardware?", a:["operating system","os"]},
+{q:"Which protocol is used to browse the internet?", a:["http","https"]},
+{q:"What is the main language of web pages?", a:["html"]},
+{q:"Which services provide email over the internet?", a:["smtp","pop3","imap"]},
+{q:"What is used to secure information online?", a:["encryption","ssl","tls"]},
+{q:"Which software protects computers from viruses?", a:["antivirus","antimalware"]},
+{q:"Which network type covers a small area like a house?", a:["lan","local area network"]},
+{q:"Which network type covers a city or country?", a:["wan","wide area network"]},
+{q:"Which protocol is used for sending files?", a:["ftp","sftp"]},
+{q:"What device connects a network to the internet?", a:["router"]},
+{q:"Which cloud model provides software online?", a:["saas","software as a service"]},
+{q:"Which cloud model provides storage and servers online?", a:["iaas","infrastructure as a service"]},
+{q:"Which cloud model provides a platform for apps?", a:["paas","platform as a service"]},
+{q:"Which programming language is used for web scripting?", a:["javascript","js"]},
+{q:"Which component processes instructions in a computer?", a:["cpu","processor"]},
+{q:"Which memory is temporary and volatile?", a:["ram","random access memory"]},
+{q:"Which network device directs data packets?", a:["switch"]},
+{q:"Which database system organizes information?", a:["sql","database"]},
+{q:"Which system tracks hardware and software changes?", a:["asset management","configuration management"]},
+{q:"Which protocol ensures secure communication online?", a:["https"]},
+{q:"Which service allows remote access to a computer?", a:["remote desktop","rdp"]}
+];
+
+// Buttons
+const startBtn = document.getElementById("startBtn");
+const attackBtn = document.getElementById("attackBtn");
+const saveMoodBtn = document.getElementById("saveMoodBtn");
+const restartBtn = document.getElementById("restartBtn");
+
+startBtn.addEventListener("click", startBattle);
+attackBtn.addEventListener("click", submitAnswer);
+saveMoodBtn.addEventListener("click", saveMood);
+restartBtn.addEventListener("click", restartGame);
+
+function startBattle(){
+  let nameInput = document.getElementById("playerName").value.trim();
+  if(nameInput !== "") playerName = nameInput;
+  document.getElementById("lesson").style.display="none";
+  document.getElementById("battle").style.display="block";
+  showQuestion();
+}
+
+function showQuestion(){
+  document.getElementById("questionText").innerText = questions[currentQuestion].q;
+}
+
+function submitAnswer(){
+  let userAnswer = document.getElementById("answer").value.toLowerCase().trim();
+  let correctAnswers = questions[currentQuestion].a;
+  let hit = correctAnswers.some(ans => userAnswer.includes(ans.toLowerCase()));
+  let feedback = document.getElementById("feedback");
+
+  if(hit){
+    hp -= damagePerQuestion;
+    correctCount++;
+    feedback.innerText = "Good hit!";
+  } else {
+    hp -= 10;
+    feedback.innerText = "Weak hit. Keep going!";
+  }
+
+  if(hp<0) hp=0;
+  document.getElementById("hp").style.width = hp + "%";
+  currentQuestion++;
+  document.getElementById("answer").value="";
+
+  if(hp===0){
+    endBattle(false);
+  } else if(currentQuestion >= questions.length){
+    endBattle(true);
+  } else {
+    showQuestion();
+  }
+}
+
+function endBattle(success){
+  document.getElementById("battle").style.display="none";
+  if(success){
+    document.getElementById("mood").style.display="block";
+  } else {
+    showGameOver("Doubt defeated you!");
+  }
+}
+
+function saveMood(){
+  lastMood = document.getElementById("moodSelect").value;
+  showGameOver("You completed the activity!");
+}
+
+function showGameOver(message){
+  document.getElementById("mood").style.display="none";
+  document.getElementById("gameOver").style.display="block";
+  document.getElementById("gameOverText").innerText = message;
+
+  // ✅ Save to localStorage
+  let scores = JSON.parse(localStorage.getItem("ictScores") || "[]");
+  scores.push({name: playerName, score: correctCount, mood: lastMood});
+  localStorage.setItem("ictScores", JSON.stringify(scores));
+
+  // Display leaderboard
+  let ul = document.getElementById("leaderboard");
+  ul.innerHTML = "";
+  scores.slice(-5).reverse().forEach(s=>{
+    let li = document.createElement("li");
+    li.innerText = `${s.name}: ${s.score} | Mood: ${s.mood}`;
+    ul.appendChild(li);
+  });
+}
+
+function restartGame(){
+  hp=100;
+  correctCount=0;
+  lastMood="";
+  currentQuestion=0;
+  document.getElementById("gameOver").style.display="none";
+  document.getElementById("lesson").style.display="block";
+  document.getElementById("hp").style.width="100%";
+  document.getElementById("feedback").innerText="";
+}
+</script>
+</body>
+  </html>
