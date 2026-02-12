@@ -1,22 +1,23 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>Evolith</title>
-<style>
-body{font-family: Arial; text-align:center; background:#0f172a; color:white;}
-.box{width:85%; margin:auto; background:#1e293b; padding:20px; border-radius:12px; margin-top:20px;}
-button{padding:10px 20px; margin-top:15px; border:none; border-radius:8px; background:#38bdf8; color:black; font-weight:bold;}
-.hpBar{width:220px; border:2px solid white; margin:auto;}
-.hp{height:20px; width:100%; background:red;}
-.enemy img{margin-top:15px;}
-#gameOver{display:none;}
-ul{text-align:left; margin:10px auto; padding-left:20px;}
-input{padding:5px; border-radius:5px; border:none;}
-</style>
+  <title>ICT Battle Game</title>
+  <style>
+    body{font-family:Arial,sans-serif;text-align:center;background:#0f172a;color:white;}
+    .box{width:85%;margin:auto;background:#1e293b;padding:20px;border-radius:12px;margin-top:20px;}
+    button{padding:10px 20px;margin-top:15px;border:none;border-radius:8px;background:#38bdf8;color:black;font-weight:bold;cursor:pointer;}
+    button:disabled{background:#999;cursor:not-allowed;}
+    .hpBar{width:220px;border:2px solid white;margin:auto;}
+    .hp{height:20px;width:100%;background:red;}
+    .enemy img{margin-top:15px;}
+    #gameOver{display:none;}
+    ul{text-align:left;margin:10px auto;padding-left:20px;}
+    input, select{padding:5px;border-radius:5px;border:none;}
+  </style>
 </head>
 <body>
 
-<h1>Evolith - Fundamentals of ICT</h1>
+<h1>📘 ICT Battle - Fundamentals of ICT</h1>
 
 <!-- LESSON / NAME INPUT -->
 <div id="lesson" class="box">
@@ -24,16 +25,15 @@ input{padding:5px; border-radius:5px; border:none;}
 <input id="playerName" placeholder="Your name">
 <h2>Lesson: Fundamentals of ICT</h2>
 <p>
-ICT (Information and Communication Technology) involves the use of computers, networks, and software to manage information.  
-It includes computer hardware, software applications, networking, and cybersecurity.  
-Understanding ICT is essential to solve problems, communicate effectively, and improve efficiency in digital environments.
+ICT (Information and Communication Technology) involves using computers, networks, and software to manage information.  
+It includes hardware, software applications, networking, and cybersecurity. Understanding ICT helps solve problems and communicate effectively.
 </p>
 <p>
 Examples include operating systems, internet services, databases, cloud computing, and network protocols.  
-Learning ICT fundamentals helps you troubleshoot systems, manage networks, and secure information.
+Learning ICT fundamentals helps troubleshoot systems, manage networks, and secure information.
 </p>
 <br>
-<button onclick="startBattle()">Start Activity</button>
+<button id="startBtn">Start Activity</button>
 </div>
 
 <!-- BATTLE -->
@@ -49,7 +49,7 @@ Learning ICT fundamentals helps you troubleshoot systems, manage networks, and s
 <h2 id="questionText"></h2>
 <input id="answer" placeholder="Type your answer">
 <br>
-<button onclick="submitAnswer()">Attack</button>
+<button id="attackBtn">Attack</button>
 <p id="feedback"></p>
 </div>
 
@@ -65,7 +65,7 @@ Learning ICT fundamentals helps you troubleshoot systems, manage networks, and s
 <option>Very Bad</option>
 </select>
 <br>
-<button onclick="saveMood()">Save Mood</button>
+<button id="saveMoodBtn">Save Mood</button>
 </div>
 
 <!-- GAME OVER / LEADERBOARD -->
@@ -75,7 +75,7 @@ Learning ICT fundamentals helps you troubleshoot systems, manage networks, and s
 <h3>Leaderboard (From GitHub)</h3>
 <ul id="leaderboard"></ul>
 <br>
-<button onclick="restartGame()">Play Again</button>
+<button id="restartBtn">Play Again</button>
 </div>
 
 <script>
@@ -114,6 +114,17 @@ let questions = [
 {q:"Which protocol ensures secure communication online?", a:["https"]},
 {q:"Which service allows remote access to a computer?", a:["remote desktop","rdp"]}
 ];
+
+// Buttons
+const startBtn = document.getElementById("startBtn");
+const attackBtn = document.getElementById("attackBtn");
+const saveMoodBtn = document.getElementById("saveMoodBtn");
+const restartBtn = document.getElementById("restartBtn");
+
+startBtn.addEventListener("click", startBattle);
+attackBtn.addEventListener("click", submitAnswer);
+saveMoodBtn.addEventListener("click", saveMood);
+restartBtn.addEventListener("click", restartGame);
 
 function startBattle(){
   let nameInput = document.getElementById("playerName").value.trim();
@@ -170,14 +181,14 @@ function saveMood(){
   showGameOver("You completed the activity!");
 }
 
-// Fetch leaderboard from GitHub
 function showGameOver(message){
   document.getElementById("mood").style.display="none";
   document.getElementById("gameOver").style.display="block";
   document.getElementById("gameOverText").innerText = message;
 
-  let url = https://github.com/zombilucaminecraft-ops/Evolith/blob/main/scores.json
- ;
+  // ✅ Raw URL to GitHub JSON
+  let url = "https://raw.githubusercontent.com/zombilucaminecraft-ops/Evolith/refs/heads/main/scores.json";
+
   fetch(url)
     .then(response => response.json())
     .then(data => {
@@ -188,6 +199,11 @@ function showGameOver(message){
         li.innerText = `${s.name}: ${s.score} | Mood: ${s.mood}`;
         ul.appendChild(li);
       });
+    })
+    .catch(err => {
+      console.error("Could not fetch leaderboard:", err);
+      let ul = document.getElementById("leaderboard");
+      ul.innerHTML = "<li>Cannot load leaderboard.</li>";
     });
 }
 
