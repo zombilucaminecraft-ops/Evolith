@@ -176,9 +176,8 @@ function showGameOver(message){
   document.getElementById("gameOver").style.display="block";
   document.getElementById("gameOverText").innerText = message;
 
-  // Replace with your GitHub raw JSON URL
-  let url = "https://raw.githubusercontent.com/zombilucaminecraft-ops//main/scores.json";
-
+  let url = https://github.com/zombilucaminecraft-ops/Evolith/blob/main/scores.json
+ ;
   fetch(url)
     .then(response => response.json())
     .then(data => {
