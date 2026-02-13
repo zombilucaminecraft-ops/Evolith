@@ -1,1 +1,210 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Evolith</title>
+  <style>
+    body { font-family: Arial; text-align: center; background:#0f172a; color:white;}
+    .box { width:85%; margin:auto; background:#1e293b; padding:20px; border-radius:12px; margin-top:20px;}
+    button { padding:10px 20px; margin-top:15px; border:none; border-radius:8px; background:#38bdf8; color:black; font-weight:bold; cursor:pointer;}
+    .hpBar { width:240px; border:2px solid white; margin:auto; }
+    .hp { height:20px; width:100%; background:red; transition:0.3s;}
+    ul { text-align:left; margin:auto; max-width:320px;}
+    input, select { padding:6px; border-radius:6px; border:none;}
+  </style>
+</head>
+<body>
 
+<h1>Evoith The Battle of Doubt</h1>
+
+<!-- LESSON -->
+<div id="lesson" class="box">
+<h2>Enter Name</h2>
+<input id="playerName" placeholder="Your name">
+
+<h2>Lesson: ICT Basics</h2>
+<p>
+ICT means Information and Communication Technology. It includes computers, networks, software, and internet systems used to manage and send information.
+</p>
+<p>
+ICT is important for communication, business, education, and cybersecurity. Understanding ICT helps people solve technical problems and use technology safely.
+</p>
+
+<button onclick="startGame()">Start Battle</button>
+</div>
+
+<!-- BATTLE -->
+<div id="battle" class="box" style="display:none;">
+<h2>⚔ Fight Doubt</h2>
+
+<h3>Doubt HP</h3>
+<div class="hpBar">
+<div id="hp" class="hp"></div>
+</div>
+
+<h3 id="questionText"></h3>
+<input id="answer" placeholder="Your answer">
+<br>
+<button onclick="submitAnswer()">Attack Doubt</button>
+
+<p id="hitText"></p>
+<p id="progressText"></p>
+</div>
+
+<!-- MOOD -->
+<div id="moodBox" class="box" style="display:none;">
+<h2>Pick Your Mood</h2>
+<select id="moodSelect">
+<option>Very Good</option>
+<option>Good</option>
+<option>Neutral</option>
+<option>Bad</option>
+<option>Very Bad</option>
+</select>
+<br>
+<button onclick="finishGame()">Finish</button>
+</div>
+
+<!-- GAME OVER -->
+<div id="gameOver" class="box" style="display:none;">
+<h2 id="resultText"></h2>
+<h3>Leaderboard</h3>
+<ul id="leaderboard"></ul>
+<br>
+<button onclick="restartGame()">Play Again</button>
+</div>
+
+<script>
+let playerName="Player";
+let questionIndex=0;
+let correctCount=0;
+let mood="";
+let hp=100;
+
+let questions=[
+{q:"What does ICT stand for?", a:["information communication technology"]},
+{q:"Input devices example?", a:["keyboard","mouse","scanner","microphone"]},
+{q:"Output devices example?", a:["monitor","printer","screen","speaker"]},
+{q:"Permanent storage device?", a:["hard drive","ssd","flash drive"]},
+{q:"Software controlling hardware?", a:["operating system","os"]},
+{q:"Internet browsing protocol?", a:["http","https"]},
+{q:"Main web language?", a:["html"]},
+{q:"Email services protocol?", a:["smtp","imap","pop3"]},
+{q:"Used to protect data online?", a:["encryption","ssl","tls"]},
+{q:"Protects from viruses?", a:["antivirus"]},
+{q:"Small area network?", a:["lan"]},
+{q:"Large area network?", a:["wan"]},
+{q:"File transfer protocol?", a:["ftp"]},
+{q:"Internet connection device?", a:["router"]},
+{q:"Cloud software service?", a:["saas"]},
+{q:"Cloud infrastructure service?", a:["iaas"]},
+{q:"Cloud platform service?", a:["paas"]},
+{q:"Web scripting language?", a:["javascript"]},
+{q:"Computer brain?", a:["cpu","processor"]},
+{q:"Temporary memory?", a:["ram"]},
+{q:"Directs network data?", a:["switch"]},
+{q:"Organizes data system?", a:["database","sql"]},
+{q:"Tracks hardware changes?", a:["asset management"]},
+{q:"Secure website protocol?", a:["https"]},
+{q:"Remote computer access?", a:["remote desktop","rdp"]}
+];
+
+function startGame(){
+ let name=document.getElementById("playerName").value.trim();
+ if(name!="") playerName=name;
+
+ document.getElementById("lesson").style.display="none";
+ document.getElementById("battle").style.display="block";
+
+ updateHP();
+ showQuestion();
+}
+
+function showQuestion(){
+ document.getElementById("questionText").innerText=
+ "Question "+(questionIndex+1)+": "+questions[questionIndex].q;
+}
+
+function submitAnswer(){
+ let ans=document.getElementById("answer").value.toLowerCase().trim();
+ let correct=questions[questionIndex].a;
+ let hit=false;
+
+ if(correct.some(a=>ans.includes(a))){
+   hit=true;
+   correctCount++;
+   hp-=3; // small damage visually
+   document.getElementById("hitText").innerText="Good Hit!";
+ } else {
+   hp-=1;
+   document.getElementById("hitText").innerText="Weak Hit...";
+ }
+
+ if(hp<0) hp=0;
+
+ questionIndex++;
+ document.getElementById("answer").value="";
+
+ updateHP();
+
+ document.getElementById("progressText").innerText=
+ "Progress: "+questionIndex+" / "+questions.length;
+
+ if(questionIndex>=questions.length){
+   endQuestions();
+ } else {
+   showQuestion();
+ }
+}
+
+function updateHP(){
+ document.getElementById("hp").style.width=hp+"%";
+}
+
+function endQuestions(){
+ document.getElementById("battle").style.display="none";
+ document.getElementById("moodBox").style.display="block";
+}
+
+function finishGame(){
+ mood=document.getElementById("moodSelect").value;
+
+ let half=Math.ceil(questions.length/2);
+ let resultText="";
+ if(correctCount>=half){
+   resultText="🏆 You defeated Doubt!";
+ } else {
+   resultText="💀 Doubt defeated you!";
+ }
+
+ saveScore();
+ showLeaderboard();
+
+ document.getElementById("moodBox").style.display="none";
+ document.getElementById("gameOver").style.display="block";
+ document.getElementById("resultText").innerText=resultText;
+}
+
+function saveScore(){
+ let scores=JSON.parse(localStorage.getItem("ictScores")||"[]");
+ scores.push({name:playerName, score:correctCount, mood:mood});
+ localStorage.setItem("ictScores",JSON.stringify(scores));
+}
+
+function showLeaderboard(){
+ let scores=JSON.parse(localStorage.getItem("ictScores")||"[]");
+ let ul=document.getElementById("leaderboard");
+ ul.innerHTML="";
+ scores.slice(-5).reverse().forEach(s=>{
+   let li=document.createElement("li");
+   li.innerText=`${s.name} — ${s.score} pts — Mood: ${s.mood}`;
+   ul.appendChild(li);
+ });
+}
+
+function restartGame(){
+ location.reload();
+}
+</script>
+
+</body>
+</html>
